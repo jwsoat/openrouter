@@ -91,6 +91,11 @@ because OpenRouter may return them as strings.
 
 - **"This key cannot access Analytics"** — you pasted a regular API key. Create a
   management key at openrouter.ai/settings/management-keys.
+- **"Unknown error occurred" on setup (0.1.0)** — the flow couldn't report the
+  underlying cause. Update to **0.1.1**, which converts this into a readable
+  error and logs the real reason. If it still fails, check the ERROR line in
+  Settings → System → Logs (or `config/home-assistant.log`) under
+  `custom_components.openrouter_activity` and share it.
 - **No values after setup** — if the account has no usage in the selected window
   the total sensors read zero and the top-* sensors read "unknown".
 - Enable debug logging:

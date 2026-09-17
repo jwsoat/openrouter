@@ -62,9 +62,14 @@ async def _post(session: aiohttp.ClientSession, api_key: str, payload: dict) -> 
         "Content-Type": "application/json",
     }
     try:
-        async with session.post(API_QUERY, headers=headers, json=payload) as resp:
+        timeout = aiohttp.ClientTimeout(total=60)
+        async with session.post(
+            API_QUERY, headers=headers, json=payload, timeout=timeout
+        ) as resp:
             text = await resp.text()
             body = json.loads(text) if text else {}
+    except asyncio.TimeoutError as err:
+        raise UpdateFailed("OpenRouter Analytics request timed out") from err
     except (aiohttp.ClientError, json.JSONDecodeError) as err:
         raise UpdateFailed(f"Network error calling OpenRouter Analytics: {err}") from err
 
@@ -105,11 +110,21 @@ async def validate_management_key(
         "Content-Type": "application/json",
     }
     try:
-        async with session.post(API_QUERY, headers=headers, json=payload) as resp:
+        timeout = aiohttp.ClientTimeout(total=30)
+        async with session.post(
+            API_QUERY, headers=headers, json=payload, timeout=timeout
+        ) as resp:
             text = await resp.text()
             body = json.loads(text) if text else {}
-    except (aiohttp.ClientError, json.JSONDecodeError) as err:
+    except asyncio.TimeoutError as err:
+        _LOGGER.warning("OpenRouter key validation timed out")
+        return False, "cannot_connect", "timed out"
+    except aiohttp.ClientError as err:
+        _LOGGER.warning("OpenRouter key validation network error: %s", err)
         return False, "cannot_connect", str(err)
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.exception("Unexpected error validating OpenRouter management key")
+        return False, "invalid_key", str(err)
 
     if resp.status == 200:
         return True, None, ""
