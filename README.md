@@ -44,7 +44,7 @@ You then get the same set of sensors per window to compare.
 Via HACS (custom repository):
 
 1. HACS → ⋮ → **Custom repositories**
-2. `https://github.com/jnsoat/openrouter-activity`, category **Integration**
+2. `https://github.com/jwsoat/openrouter`, category **Integration**
 3. Click install, then reload Home Assistant.
 
 Or manually: copy the `custom_components/openrouter_activity/` folder into your
