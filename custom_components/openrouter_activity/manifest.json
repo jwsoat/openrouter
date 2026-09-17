@@ -1,0 +1,14 @@
+{
+  "domain": "openrouter_activity",
+  "name": "OpenRouter Activity",
+  "codeowners": ["@jnsoat"],
+  "config_flow": true,
+  "documentation": "https://github.com/jnsoat/openrouter-activity",
+  "issue_tracker": "https://github.com/jnsoat/openrouter-activity/issues",
+  "iot_class": "cloud_polling",
+  "integration_type": "hub",
+  "quality_scale": "silver",
+  "version": "0.1.0",
+  "requirements": [],
+  "dependencies": []
+}

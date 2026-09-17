@@ -1,0 +1,53 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "OpenRouter management key",
+        "description": "Enter an OpenRouter **management key** (Settings → Management Keys). It is read-only and gives access to your account's Analytics API, which powers these sensors.",
+        "data": {
+          "management_key": "Management key",
+          "name": "Name",
+          "period": "Stats window"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate OpenRouter",
+        "description": "The stored key no longer works. Enter a valid management key.",
+        "data": {
+          "management_key": "Management key"
+        }
+      }
+    },
+    "error": {
+      "invalid_key": "Could not validate this key. Double-check it and try again.",
+      "not_management_key": "This key cannot access Analytics. Use a management key, not a regular API key.",
+      "cannot_connect": "Could not reach OpenRouter. Check your network and try again."
+    },
+    "abort": {
+      "reauth_successful": "Reauthentication successful"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "OpenRouter Activity options",
+        "description": "Choose which time window the sensors cover and how often they refresh.",
+        "data": {
+          "period": "Stats window",
+          "scan_interval": "Update interval"
+        }
+      }
+    }
+  },
+  "selector": {
+    "period": {
+      "options": {
+        "24h": "Last 24 hours",
+        "7d": "Last 7 days",
+        "30d": "Last 30 days",
+        "90d": "Last 90 days",
+        "1y": "Last year"
+      }
+    }
+  }
+}
