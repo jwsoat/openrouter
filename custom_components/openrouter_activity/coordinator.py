@@ -47,6 +47,15 @@ def _num(value: Any) -> float:
         return 0.0
 
 
+def _iso_z(dt: datetime) -> str:
+    """RFC3339 UTC timestamp with a Z suffix.
+
+    OpenRouter's /analytics/query rejects the '+00:00' offset produced by
+    datetime.isoformat() with HTTP 400, but accepts the 'Z' form.
+    """
+    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def period_window(period: str) -> tuple[datetime, datetime]:
     """Return (start, end) UTC datetimes for a rolling preset window."""
     days = PERIOD_PRESETS.get(period, PERIOD_PRESETS[DEFAULT_PERIOD])
@@ -100,8 +109,8 @@ async def validate_management_key(
     payload = {
         "metrics": ["request_count"],
         "time_range": {
-            "start": (end - timedelta(hours=1)).isoformat(),
-            "end": end.isoformat(),
+            "start": _iso_z(end - timedelta(hours=1)),
+            "end": _iso_z(end),
         },
         "limit": 1,
     }
@@ -168,7 +177,7 @@ class OpenRouterCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _async_update_data(self) -> dict[str, Any]:
         session = self.hass.helpers.aiohttp_client.async_get_clientsession(self.hass)
         start, end = period_window(self.period)
-        time_range = {"start": start.isoformat(), "end": end.isoformat()}
+        time_range = {"start": _iso_z(start), "end": _iso_z(end)}
 
         aggregate = {
             "metrics": list(METRICS),
