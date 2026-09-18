@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -27,6 +28,8 @@ from .const import (
     PERIOD_PRESETS,
 )
 from .coordinator import validate_management_key
+
+_LOGGER = logging.getLogger(__name__)
 
 PERIOD_DESCRIPTIONS = {
     "24h": "Last 24 hours",
@@ -55,18 +58,26 @@ class OpenRouterActivityConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         if user_input is not None:
-            ok, error_key = await _try_connect(self.hass, user_input[CONF_MANAGEMENT_KEY])
-            if ok:
-                name = user_input.get(CONF_NAME) or DEFAULT_NAME
-                return self.async_create_entry(
-                    title=name,
-                    data={CONF_MANAGEMENT_KEY: user_input[CONF_MANAGEMENT_KEY]},
-                    options={
-                        CONF_PERIOD: user_input.get(CONF_PERIOD, DEFAULT_PERIOD),
-                        CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
-                    },
+            try:
+                ok, error_key = await _try_connect(
+                    self.hass, user_input[CONF_MANAGEMENT_KEY]
                 )
-            errors["base"] = error_key or "invalid_key"
+                if ok:
+                    name = user_input.get(CONF_NAME) or DEFAULT_NAME
+                    return self.async_create_entry(
+                        title=name,
+                        data={CONF_MANAGEMENT_KEY: user_input[CONF_MANAGEMENT_KEY]},
+                        options={
+                            CONF_PERIOD: user_input.get(CONF_PERIOD, DEFAULT_PERIOD),
+                            CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+                        },
+                    )
+                errors["base"] = error_key or "invalid_key"
+            except Exception:  # noqa: BLE001
+                _LOGGER.exception(
+                    "Unexpected error in OpenRouter Activity config flow submit"
+                )
+                errors["base"] = "cannot_connect"
 
         data_schema = vol.Schema(
             {
