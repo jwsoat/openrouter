@@ -40,11 +40,11 @@ PERIOD_DESCRIPTIONS = {
 }
 
 
-async def _try_connect(hass: HomeAssistant, key: str) -> tuple[bool, str | None]:
-    """Validate a management key; return (ok, error_translation_key)."""
+async def _try_connect(hass: HomeAssistant, key: str) -> tuple[bool, str | None, str]:
+    """Validate a management key; return (ok, error_translation_key, detail)."""
     session = hass.helpers.aiohttp_client.async_get_clientsession(hass)
-    ok, error_key, _msg = await validate_management_key(session, key)
-    return ok, error_key
+    ok, error_key, msg = await validate_management_key(session, key)
+    return ok, error_key, msg
 
 
 class OpenRouterActivityConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -59,7 +59,7 @@ class OpenRouterActivityConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             try:
-                ok, error_key = await _try_connect(
+                ok, error_key, detail = await _try_connect(
                     self.hass, user_input[CONF_MANAGEMENT_KEY]
                 )
                 if ok:
@@ -72,6 +72,12 @@ class OpenRouterActivityConfigFlow(ConfigFlow, domain=DOMAIN):
                             CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
                         },
                     )
+                # Log the real reason at ERROR so it lands in the system log.
+                _LOGGER.error(
+                    "OpenRouter key validation failed (base=%s): %s",
+                    error_key,
+                    detail,
+                )
                 errors["base"] = error_key or "invalid_key"
             except Exception:  # noqa: BLE001
                 _LOGGER.exception(
